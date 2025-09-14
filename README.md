@@ -1,5 +1,5 @@
 # Vision_Estoque_Financeiro_Applet
-
+![image](vision.png)
 ## Descrição (Português - pt-br)
 
 Este applet, desenvolvido no Google AI Studio e implantado via Cloud Run, tem como missão principal otimizar a comunicação e a integração de dados entre os departamentos de Estoque e Financeiro. Utilizando o poder do Gemini Flash 2.5 Pro para compreensão de imagem, o "Vision Estoque-Financeiro" transforma o processo de registro e validação de informações, minimizando erros e acelerando a tomada de decisões.

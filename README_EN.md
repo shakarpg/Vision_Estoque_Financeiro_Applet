@@ -1,4 +1,4 @@
-# Vision Stock-Finance
+# Vision Stock-Financial
 
 ## Description (English - en)
 

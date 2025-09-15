@@ -130,11 +130,11 @@ O arquivo `ai_studio_code.py` foi modificado para integrar com o Google Cloud St
 Durante a fase de integração e tentativa de implantação, foram encontrados os seguintes desafios:
 
 -   **Autenticação do Google Cloud no Contêiner Docker**: Ao tentar executar o contêiner Docker localmente, o aplicativo falhou ao se autenticar com o Google Cloud, indicando que as credenciais padrão não estavam disponíveis ou configuradas corretamente dentro do ambiente do contêiner. Para uma implantação bem-sucedida no Cloud Run, a conta de serviço associada ao serviço do Cloud Run precisará ter as permissões adequadas para acessar o Vertex AI e o Cloud Storage.
--   **Habilitação da API do Artifact Registry**: O envio da imagem Docker para o Google Container Registry (GCR) falhou porque a API do Artifact Registry não estava habilitada no projeto GCP fornecido (`gen-lang-client-0472122497`). Esta API é essencial para armazenar e gerenciar imagens Docker no Google Cloud. Para prosseguir com a implantação, o usuário precisará habilitar esta API no console do Google Cloud.
+-   **Habilitação da API do Artifact Registry**: O envio da imagem Docker para o Google Container Registry (GCR) falhou porque a API do Artifact Registry não estava habilitada no projeto GCP fornecido (ID Project). Esta API é essencial para armazenar e gerenciar imagens Docker no Google Cloud. Para prosseguir com a implantação, o usuário precisará habilitar esta API no console do Google Cloud.
 
 **Próximos Passos para Implantação Completa:**
 
-1.  **Habilitar a API do Artifact Registry**: O usuário deve visitar o link fornecido anteriormente (https://console.developers.google.com/apis/api/artifactregistry.googleapis.com/overview?project=gen-lang-client-0472122497) e habilitar a API.
+1.  **Habilitar a API do Artifact Registry**: O usuário deve visitar o link fornecido anteriormente (https://console.developers.google.com/apis/api/artifactregistry.googleapis.com/overview?ID) e habilitar a API.
 2.  **Re-tentar o Push da Imagem Docker**: Após a habilitação da API, a imagem Docker poderá ser enviada com sucesso para o GCR.
 3.  **Implantar no Cloud Run**: Com a imagem no GCR, o serviço poderá ser implantado no Google Cloud Run, garantindo que a conta de serviço do Cloud Run tenha as permissões necessárias para `Vertex AI User` e `Storage Object Admin` (ou roles mais específicas, dependendo do princípio do menor privilégio).
 4.  **Configurar Variáveis de Ambiente no Cloud Run**: As variáveis de ambiente `GCP_PROJECT_ID`, `GCP_LOCATION`, `GEMINI_MODEL_ID` e `GCS_BUCKET_NAME` precisarão ser configuradas no serviço do Cloud Run. O `GCS_BUCKET_NAME` será o nome do bucket que será criado para armazenar as imagens.

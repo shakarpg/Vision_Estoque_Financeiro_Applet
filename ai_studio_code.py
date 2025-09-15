@@ -2,8 +2,11 @@ import os
 import io
 import json
 from flask import Flask, request, jsonify
-from google.cloud import aiplatform
-# from google.cloud import storage # Se for usar Cloud Storage
+import vertexai
+from vertexai.preview.generative_models import GenerativeModel, Part
+from google.cloud import storage
+
+storage_client = storage.Client()
 # from google.cloud import firestore # Se for usar Firestore
 from dotenv import load_dotenv
 
@@ -20,23 +23,33 @@ LOCATION = os.getenv("GCP_LOCATION", "us-central1") # ou a região onde seu mode
 MODEL_ID = os.getenv("GEMINI_MODEL_ID", "gemini-1.5-flash-001") 
 
 # Inicializa o cliente do Vertex AI (para interagir com o Gemini)
-aiplatform.init(project=PROJECT_ID, location=LOCATION)
-model = aiplatform.GenerativeModel(MODEL_ID)
+vertexai.init(project=PROJECT_ID, location=LOCATION)
+model = GenerativeModel(MODEL_ID)
 
 # --- Endpoint principal para upload de imagem ---
-@app.route('/upload-invoice', methods=['POST'])
+@app.route("/upload-invoice", methods=["POST"])
 def upload_invoice():
-    if 'image' not in request.files:
+    if "image" not in request.files:
         return jsonify({"error": "No image file provided"}), 400
 
-    image_file = request.files['image']
-    if image_file.filename == '':
+    image_file = request.files["image"]
+    if image_file.filename == "":
         return jsonify({"error": "No selected image"}), 400
 
     if image_file:
         try:
             # Lê a imagem como bytes
             image_bytes = image_file.read()
+            image_name = image_file.filename
+            bucket_name = os.getenv("GCS_BUCKET_NAME")
+
+            if not bucket_name:
+                return jsonify({"error": "GCS_BUCKET_NAME environment variable not set"}), 500
+
+            bucket = storage_client.bucket(bucket_name)
+            blob = bucket.blob(image_name)
+            blob.upload_from_string(image_bytes, content_type=image_file.mimetype)
+            gcs_uri = f"gs://{bucket_name}/{image_name}"
 
             # --- Chamar a API do Gemini para análise ---
             # O prompt é crucial para a qualidade da extração.
@@ -56,11 +69,11 @@ def upload_invoice():
                   "descricao": "<descricao_do_item>",
                   "quantidade": <quantidade_numerica>,
                   "unidade": "<unidade_medida>",
-                  "valor_unitario": <valor_numerico>,
-                  "valor_total_item": <valor_numerico>
+                  "valor_unitario": <valor_numerica>,
+                  "valor_total_item": <valor_numerica>
                 }
               ],
-              "valor_total_documento": <valor_numerico>,
+              "valor_total_documento": <valor_numerica>,
               "observacoes_adicionais": "<texto_livre_de_observacoes_ou_discrepancias>"
             }
             Se a informação não for encontrada, deixe o campo como `null` ou array vazio para "itens".
@@ -68,13 +81,8 @@ def upload_invoice():
             Certifique-se de que a saída seja um JSON válido.
             """
 
-            # Cria um objeto Part com a imagem
-            image_part = {
-                "inline_data": {
-                    "mime_type": image_file.mimetype,
-                    "data": io.BytesIO(image_bytes).read().hex() # Gemini espera base64 ou hex para inline_data
-                }
-            }
+            # Cria um objeto Part com a imagem do GCS
+            image_part = Part.from_uri(gcs_uri, mime_type=image_file.mimetype)
 
             # Envia o prompt e a imagem para o Gemini
             response = model.generate_content([prompt, image_part])

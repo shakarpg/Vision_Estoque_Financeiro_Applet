@@ -1,52 +1,210 @@
-# Vision_Estoque_Financeiro_Applet
-![image](vision.png)
-## Descrição (Português - pt-br)
 
-Este applet, desenvolvido no Google AI Studio e implantado via Cloud Run, tem como missão principal otimizar a comunicação e a integração de dados entre os departamentos de Estoque e Financeiro. Utilizando o poder do Gemini Flash 2.5 Pro para compreensão de imagem, o "Vision Estoque-Financeiro" transforma o processo de registro e validação de informações, minimizando erros e acelerando a tomada de decisões.
+# Vision Estoque Financeiro Applet
 
-O problema de comunicação entre estoque e financeiro muitas vezes surge de processos manuais, digitação de dados e a falta de uma fonte única e visual da verdade. Nosso applet aborda isso permitindo que funcionários do estoque capturem informações visuais de forma rápida e eficiente, que são então processadas e estruturadas para o departamento financeiro.
+Aplicação Flask segura para análise automatizada de documentos fiscais usando Google Gemini AI.
 
-## Problema Resolvido
+## 🔒 Recursos de Segurança
 
-A comunicação ineficiente entre estoque e financeiro pode levar a:
-*   **Erros de Lançamento:** Digitação incorreta de códigos, quantidades ou valores.
-*   **Atrasos:** Demora na conciliação de notas fiscais com entradas de estoque.
-*   **Discrepâncias:** Dificuldade em identificar a causa de diferenças entre estoque físico e contábil.
-*   **Falta de Evidência Visual:** Dificuldade em auditar ou verificar transações sem registros fotográficos.
+Esta versão implementa múltiplas camadas de segurança:
 
-## Funcionalidades Principais
+### Validação de Arquivos
+- ✅ Verificação de extensões permitidas
+- ✅ Validação de tipos MIME
+- ✅ Verificação de magic numbers
+- ✅ Limite de tamanho de arquivo (16MB)
+- ✅ Sanitização de nomes de arquivo
 
-*   **Entrada de Dados Simplificada:** Capture fotos de documentos de estoque (notas fiscais, etiquetas, relatórios de contagem) diretamente pelo applet.
-*   **Compreensão de Imagem Multimodal (Gemini Flash 2.5 Pro):**
-    *   **Extração de Texto (OCR):** Identifica e extrai texto de documentos (números de NF, fornecedores, valores, descrições).
-    *   **Leitura de Códigos:** Reconhece códigos de barras e QR codes para identificação de produtos.
-    *   **Reconhecimento de Elementos:** Potencial para identificar tipos de itens ou embalagens.
-*   **Geração de Resumos Estruturados:** Transforma as informações visuais em resumos textuais claros e formatados, ideais para o departamento financeiro.
-*   **Integração Flexível (Conceitual):** A saída estruturada pode ser enviada para sistemas de chat internos, e-mails ou outros sistemas (ERP) via APIs.
-*   **Histórico e Auditoria:** Mantém um registro visual e textual das transações para referência futura e auditoria.
+### Segurança da Aplicação
+- ✅ Headers de segurança (CSP, HSTS, X-Frame-Options)
+- ✅ Rate limiting (10 uploads/minuto por IP)
+- ✅ CORS configurado adequadamente
+- ✅ Autenticação opcional por token
+- ✅ Sanitização de prompts para IA
+- ✅ Logging de segurança
 
-## Como Funciona
+### Configuração Segura
+- ✅ Debug mode desabilitado em produção
+- ✅ Binding seguro (127.0.0.1 em dev, 0.0.0.0 em prod)
+- ✅ Variáveis de ambiente para configurações sensíveis
+- ✅ Usuário não-root no container Docker
 
-1.  **Captura da Imagem:** Um funcionário do estoque utiliza o applet para tirar uma foto de um documento (ex: nota fiscal de entrada de mercadoria, etiqueta de produto com código de barras, relatório de contagem).
-2.  **Processamento Gemini:** A imagem é enviada para a API do Google Gemini Flash 2.5 Pro.
-3.  **Extração de Informações:** O Gemini analisa a imagem, extraindo dados relevantes como número da nota fiscal, fornecedor, itens, quantidades, valores e códigos de produtos.
-4.  **Geração de Resumo:** O applet compila as informações extraídas em um resumo legível e padronizado.
-5.  **Comunicação:** O resumo é apresentado ao usuário para confirmação e, em seguida, enviado automaticamente para o canal de comunicação preferido do departamento financeiro.
+## 🚀 Instalação e Configuração
 
-## Benefícios
+### 1. Clonar o repositório
+```bash
+git clone https://github.com/shakarpg/Vision_Estoque_Financeiro_Applet.git
+cd Vision_Estoque_Financeiro_Applet
+```
 
-*   **Redução de Erros:** Minimiza erros de digitação e interpretação humana.
-*   **Agilidade Operacional:** Acelera o registro de entradas/saídas e a conciliação financeira.
-*   **Transparência e Evidência:** Fornece um registro visual auditável das transações.
-*   **Otimização de Tempo:** Libera o tempo dos funcionários para tarefas de maior valor agregado.
-*   **Melhora na Colaboração:** Facilita uma comunicação mais clara e precisa entre equipes.
+### 2. Configurar variáveis de ambiente
+```bash
+cp .env.example .env
+# Editar .env com suas configurações
+```
 
-## Tecnologias Utilizadas
+### 3. Instalar dependências
+```bash
+python -m venv venv
+source venv/bin/activate  # Linux/Mac
+# ou
+venv\Scripts\activate  # Windows
 
-*   **Google AI Studio:** Ambiente de desenvolvimento para prototipagem e teste do modelo Gemini.
-*   **Gemini Flash 2.5 Pro API:** Para capacidades multimodais de compreensão de imagem em tempo real.
-*   **Cloud Run:** Para implantação escalável, serverless e de baixo custo do backend do applet.
-*   **Frontend (Conceitual):** Uma interface web ou móvel leve para interação do usuário (ex: HTML/CSS/JavaScript).
+pip install -r requirements.txt
+```
 
----
+### 4. Executar a aplicação
 
+#### Desenvolvimento
+```bash
+export FLASK_ENV=development
+python main.py
+```
+
+#### Produção com Docker
+```bash
+docker-compose up -d
+```
+
+## 📋 Configurações Obrigatórias
+
+As seguintes variáveis de ambiente são obrigatórias:
+
+- `GCP_PROJECT_ID`: ID do projeto Google Cloud
+- `GCS_BUCKET_NAME`: Nome do bucket do Google Cloud Storage
+- `SECRET_KEY`: Chave secreta para sessões Flask
+
+## 🔧 Configurações Opcionais
+
+- `ENABLE_AUTH=true`: Habilita autenticação por token
+- `API_TOKEN`: Token para autenticação (se habilitada)
+- `ALLOWED_ORIGINS`: Origens permitidas para CORS
+- `MAX_FILE_SIZE`: Tamanho máximo de arquivo em bytes
+- `REDIS_URL`: URL do Redis para rate limiting
+
+## 🧪 Testes
+
+```bash
+# Executar todos os testes
+pytest
+
+# Executar testes de segurança
+pytest tests/test_security.py -v
+
+# Executar com coverage
+pytest --cov=app tests/
+```
+
+## 📊 Monitoramento
+
+### Health Check
+```bash
+curl http://localhost:8080/health
+```
+
+### Logs
+Os logs são salvos em `logs/vision_app.log` com rotação automática.
+
+## 🔐 Autenticação (Opcional)
+
+Para habilitar autenticação:
+
+1. Definir `ENABLE_AUTH=true` no `.env`
+2. Definir `API_TOKEN` com um token seguro
+3. Incluir header `Authorization: Bearer <token>` nas requisições
+
+## 📡 API Endpoints
+
+### POST /upload-invoice
+Upload e análise de documento fiscal.
+
+**Headers:**
+- `Content-Type: multipart/form-data`
+- `Authorization: Bearer <token>` (se autenticação habilitada)
+
+**Body:**
+- `image`: Arquivo de imagem (PNG, JPG, PDF, etc.)
+
+**Response:**
+```json
+{
+  "message": "Imagem processada com sucesso e dados extraídos.",
+  "extracted_data": {
+    "tipo_documento": "Nota Fiscal",
+    "numero_documento": "123456",
+    "data_emissao": "01/01/2024",
+    "fornecedor": "Empresa XYZ",
+    "itens": [...],
+    "valor_total_documento": 1000.00
+  }
+}
+```
+
+### GET /health
+Verificação de saúde da aplicação.
+
+## 🐳 Docker
+
+### Build da imagem
+```bash
+docker build -t vision-estoque-financeiro .
+```
+
+### Executar container
+```bash
+docker run -p 8080:8080 --env-file .env vision-estoque-financeiro
+```
+
+## 🔄 CI/CD
+
+A aplicação está preparada para deploy em:
+- Google Cloud Run
+- Kubernetes
+- Heroku
+- AWS ECS
+
+## 📝 Changelog de Segurança
+
+### Versão 2.0.0 - Hardening de Segurança
+
+#### Vulnerabilidades Corrigidas:
+1. **Debug Mode**: Desabilitado em produção
+2. **Validação de Upload**: Implementada validação completa
+3. **Autenticação**: Sistema opcional implementado
+4. **Exposição de Dados**: Logs sanitizados
+5. **Network Binding**: Configuração segura por ambiente
+6. **Headers de Segurança**: Implementados via Flask-Talisman
+7. **Rate Limiting**: Implementado com Flask-Limiter
+8. **CORS**: Configurado adequadamente
+9. **Injeção de Prompt**: Sanitização implementada
+
+#### Melhorias Estruturais:
+- Arquitetura modular com blueprints
+- Sistema de configuração robusto
+- Tratamento de erros abrangente
+- Logging estruturado
+- Testes automatizados
+- Containerização segura
+
+## 🤝 Contribuição
+
+1. Fork o projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
+3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+4. Push para a branch (`git push origin feature/AmazingFeature`)
+5. Abra um Pull Request
+
+## 📄 Licença
+
+Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICENSE) para detalhes.
+
+## ⚠️ Avisos de Segurança
+
+- Sempre use HTTPS em produção
+- Mantenha as dependências atualizadas
+- Configure adequadamente as variáveis de ambiente
+- Monitore os logs regularmente
+- Implemente backup dos dados importantes
+
+## 📞 Suporte
+
+Para questões de segurança, entre em contato através de issues no GitHub ou email do mantenedor.

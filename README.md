@@ -1,6 +1,6 @@
 # 📊 Visão Estoque-Financeiro_Applet
 
-![projeto]()
+![projeto](vision.png)
 
 ## 📝 Descrição
 O **Visão Estoque-Financeiro_Applet**, desenvolvido no **Google AI Studio** e implantado via **Cloud Run**, tem como missão **otimizar a comunicação e a integração de dados** entre os departamentos de **Estoque** e **Financeiro**.  

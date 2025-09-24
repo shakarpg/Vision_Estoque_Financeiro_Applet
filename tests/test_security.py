@@ -118,7 +118,7 @@ class TestAPIEndpoints:
         response = client.post('/upload-invoice')
         assert response.status_code == 400
         data = response.get_json()
-        assert 'erro' in data['error'].lower()
+        assert 'arquivo' in data['error'].lower()
     
     def test_upload_empty_filename(self, client):
         """Teste de upload com nome vazio"""
@@ -136,7 +136,7 @@ class TestSecurityHeaders:
         # Verificar alguns headers importantes
         assert 'X-Content-Type-Options' in response.headers
         assert 'X-Frame-Options' in response.headers
-        assert 'X-XSS-Protection' in response.headers
+        assert 'Content-Security-Policy' in response.headers
     
     def test_cors_headers(self, client):
         """Teste de headers CORS"""

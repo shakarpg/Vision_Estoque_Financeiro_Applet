@@ -1,6 +1,6 @@
-# Guia de Configuração de CI/CD com Google Cloud Build
+# Guia de Configuração de CI/CD com Google Cloud Build e Testes Automatizados
 
-Este guia detalha como configurar um pipeline de Integração Contínua e Entrega Contínua (CI/CD) para o projeto `Vision_Estoque_Financeiro_Applet` utilizando o Google Cloud Build. O pipeline automatizará o processo de build da imagem Docker, push para o Google Artifact Registry e deploy no Google Cloud Run a cada commit no repositório.
+Este guia detalha como configurar um pipeline de Integração Contínua e Entrega Contínua (CI/CD) para o projeto `Vision_Estoque_Financeiro_Applet` utilizando o Google Cloud Build. O pipeline automatizará o processo de execução de testes, build da imagem Docker, push para o Google Artifact Registry e deploy no Google Cloud Run a cada commit no repositório.
 
 ## 1. Pré-requisitos
 
@@ -52,13 +52,27 @@ gcloud artifacts repositories create cloud-run-source-deploy \
     --description="Docker repository for Cloud Run deployments"
 ```
 
-### 2.3. Ajustar o `cloudbuild.yaml` (Opcional)
+### 2.3. Adicionar Testes Automatizados
 
-O arquivo `cloudbuild.yaml` foi gerado com configurações padrão. Você pode precisar ajustá-lo para sua região ou variáveis de ambiente específicas. O arquivo está localizado na raiz do seu repositório clonado:
+Para garantir a qualidade do código, adicionamos um arquivo de teste básico `tests/test_app.py` e configuramos o `cloudbuild.yaml` para executá-los. Certifique-se de que seu projeto Python tenha um diretório `tests/` com seus arquivos de teste e que as dependências de teste (como `pytest`) estejam listadas no `requirements.txt` ou instaladas na etapa de teste.
+
+### 2.4. Ajustar o `cloudbuild.yaml`
+
+O arquivo `cloudbuild.yaml` foi atualizado para incluir uma etapa de execução de testes antes do build da imagem Docker. O conteúdo atualizado é o seguinte:
 
 ```yaml
-# Conteúdo do cloudbuild.yaml
 steps:
+  # Instalar dependências e executar testes
+  - name: 'python'
+    id: 'Run Unit Tests'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        pip install --no-cache-dir -r Vision_Estoque_Financeiro_Applet/requirements.txt
+        pip install pytest
+        pytest Vision_Estoque_Financeiro_Applet/tests/test_app.py
+
   # Build da imagem Docker
   - name: 'gcr.io/cloud-builders/docker'
     id: 'Build Docker Image'
@@ -96,6 +110,7 @@ images:
 
 **Pontos de atenção no `cloudbuild.yaml`:**
 
+*   **Etapa de Testes**: A nova etapa `Run Unit Tests` instala as dependências do `requirements.txt` e `pytest`, e então executa os testes localizados em `Vision_Estoque_Financeiro_Applet/tests/test_app.py`. Certifique-se de que o caminho para seus testes esteja correto.
 *   **`region`**: Certifique-se de que a região (`us-central1` no exemplo) corresponde à região onde você deseja implantar seu serviço Cloud Run e onde criou o repositório Artifact Registry.
 *   **`--allow-unauthenticated`**: Se você deseja que seu serviço Cloud Run seja acessível publicamente sem autenticação, mantenha esta flag. Caso contrário, remova-a e configure a autenticação de acordo com suas necessidades de segurança.
 *   **`--set-env-vars`**: Ajuste as variáveis de ambiente conforme necessário. `GCP_PROJECT_ID`, `GCP_LOCATION`, `GEMINI_MODEL_ID` e `GCS_BUCKET_NAME` são essenciais para o funcionamento do aplicativo.
@@ -108,9 +123,7 @@ Um trigger do Cloud Build monitora seu repositório e inicia automaticamente o p
     Vá para [Cloud Build](https://console.cloud.google.com/cloudbuild/triggers) no seu projeto GCP.
 
 2.  **Crie um novo Trigger**:
-    *   Clique em **
-
-    **Criar Trigger**.
+    *   Clique em **Criar Trigger**.
     *   **Nome**: Dê um nome descritivo ao seu trigger (ex: `vision-estoque-financeiro-applet-ci-cd`).
     *   **Região**: Selecione a região onde o trigger será executado (ex: `global` ou a mesma região do seu Cloud Run).
     *   **Evento**: Selecione `Push para um branch`.
@@ -131,8 +144,8 @@ Se o build for bem-sucedido, a nova versão da sua aplicação será implantada 
 ## 5. Próximos Passos e Considerações de Segurança
 
 *   **Secrets Manager**: Para gerenciar credenciais sensíveis (como chaves de API) de forma mais segura, considere integrar o Google Secret Manager. Você pode referenciar secrets no seu `cloudbuild.yaml` e no seu serviço Cloud Run.
-*   **Testes Automatizados**: Adicione etapas de testes automatizados ao seu `cloudbuild.yaml` para garantir a qualidade do código antes do deploy. Por exemplo, você pode adicionar uma etapa para executar os testes localizados no diretório `tests/`.
+*   **Cobertura de Testes**: Expanda a suíte de testes para incluir mais cenários e garantir uma cobertura abrangente do código.
 *   **Ambientes**: Para projetos maiores, considere configurar diferentes triggers para diferentes branches (ex: `develop` para um ambiente de staging, `main` para produção).
 *   **Monitoramento**: Configure alertas e monitoramento para seu serviço Cloud Run para ser notificado sobre quaisquer problemas após o deploy.
 
-Este guia fornece uma base para um pipeline de CI/CD robusto. Adapte-o às necessidades específicas do seu projeto e às melhores práticas de segurança da sua organização.
+Este guia fornece uma base para um pipeline de CI/CD robusto com testes automatizados. Adapte-o às necessidades específicas do seu projeto e às melhores práticas de segurança da sua organização.

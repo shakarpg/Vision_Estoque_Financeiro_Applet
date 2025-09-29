@@ -1,4 +1,15 @@
 steps:
+  # Instalar dependências e executar testes
+  - name: 'python'
+    id: 'Run Unit Tests'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        pip install --no-cache-dir -r Vision_Estoque_Financeiro_Applet/requirements.txt
+        pip install pytest
+        pytest Vision_Estoque_Financeiro_Applet/tests/test_app.py
+
   # Build da imagem Docker
   - name: 'gcr.io/cloud-builders/docker'
     id: 'Build Docker Image'

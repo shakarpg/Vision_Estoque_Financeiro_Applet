@@ -1,0 +1,35 @@
+steps:
+  # Build da imagem Docker
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'Build Docker Image'
+    args: ['build', '-t', 'gcr.io/${PROJECT_ID}/vision-estoque-financeiro-applet:${COMMIT_SHA}', '.']
+    dir: 'Vision_Estoque_Financeiro_Applet'
+
+  # Push da imagem para o Google Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'Push Docker Image'
+    args: ['push', 'gcr.io/${PROJECT_ID}/vision-estoque-financeiro-applet:${COMMIT_SHA}']
+
+  # Deploy da imagem para o Google Cloud Run
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'Deploy to Cloud Run'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'vision-estoque-financeiro-applet'
+      - '--image'
+      - 'gcr.io/${PROJECT_ID}/vision-estoque-financeiro-applet:${COMMIT_SHA}'
+      - '--region'
+      - 'us-central1' # Altere para a sua região preferida
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated' # Ajuste conforme a necessidade de autenticação
+      - '--set-env-vars'
+      - 'GCP_PROJECT_ID=${PROJECT_ID},GCP_LOCATION=us-central1,GEMINI_MODEL_ID=gemini-pro-vision,GCS_BUCKET_NAME=${PROJECT_ID}-vision-estoque-uploads' # Ajuste as variáveis de ambiente
+    env:
+      - 'CLOUDSDK_CORE_PROJECT=${PROJECT_ID}'
+      - 'CLOUDSDK_COMPUTE_REGION=us-central1' # Altere para a sua região preferida
+
+images:
+  - 'gcr.io/${PROJECT_ID}/vision-estoque-financeiro-applet:${COMMIT_SHA}'
+
